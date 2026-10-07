@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>துல்லிய தமிழ் பஞ்சாங்கம்</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #fcf8f2; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .main-card { width: 100%; max-width: 520px; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 2px solid #800000; overflow: hidden; }
+        
+        /* Header Styling */
+        .header-yellow { background-color: #ffcc00; padding: 15px; display: flex; align-items: center; gap: 12px; }
+        .header-yellow h2 { margin: 0; font-size: 20px; color: #111; }
+        .header-teal { background-color: #00897b; color: white; padding: 10px; display: flex; justify-content: space-around; text-align: center; font-size: 12px; }
+        .sun-item span { font-weight: bold; font-size: 13px; display: block; }
+
+        /* Input Section */
+        .input-box { background-color: #eef2f5; padding: 15px; text-align: center; border-bottom: 1px solid #ddd; }
+        .input-group { display: flex; gap: 10px; justify-content: center; margin-top: 8px; }
+        input[type="date"], input[type="time"] { padding: 8px 12px; font-size: 14px; border-radius: 4px; border: 1px solid #b0bec5; }
+        .btn-calc { background-color: #800000; color: white; border: none; padding: 10px 20px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 85%; }
+        .btn-calc:hover { background-color: #600000; }
+
+        /* Result Cards */
+        .panchang-body { padding: 12px; }
+        .day-block { background-color: #f8f9fa; border: 1px solid #cfd8dc; border-radius: 6px; padding: 10px; margin-bottom: 12px; }
+        .day-block.current { background-color: #fffde7; border: 2px solid #fbc02d; }
+        .day-title { font-weight: bold; font-size: 15px; color: #800000; border-bottom: 1px solid #e0e0e0; padding-bottom: 4px; margin-bottom: 8px; }
+        
+        .info-row { margin: 5px 0; font-size: 14px; color: #222; }
+        .time-badge { background-color: #e0f2f1; color: #004d40; padding: 3px 6px; border-radius: 4px; font-size: 12.5px; font-weight: bold; display: inline-block; margin-top: 2px; }
+        
+        /* Next Year Section */
+        .next-year-container { margin-top: 15px; border: 2px dashed #00897b; border-radius: 6px; padding: 10px; background-color: #f1f8e9; }
+        .next-year-header { font-weight: bold; font-size: 16px; color: #2e7d32; text-align: center; margin-bottom: 10px; }
+
+        /* Nakshatra Section */
+        .nak-box-title { background-color: #2e7d32; color: white; padding: 8px; text-align: center; font-weight: bold; margin-top: 15px; border-radius: 4px; }
+        .nak-item { padding: 8px; text-align: center; border-bottom: 1px solid #f0f0f0; font-size: 13.5px; }
+        .active-nak { background-color: #fff59d; font-weight: bold; }
+        .footer-banner { background-color: #800000; color: white; padding: 10px; text-align: center; font-weight: bold; font-size: 14px; margin-top: 12px; }
+        .result-container { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="main-card">
+    <!-- Header -->
+    <div class="header-yellow">
+        <div>
+            <h2 id="headTitle">துல்லிய பஞ்சாங்கம்</h2>
+            <p style="margin:2px 0 0 0; font-size:12px;">ஸ்ரீ சூரிய பகவான் துணை | சென்னை, தமிழ்நாடு</p>
+        </div>
+    </div>
+
+    <div class="header-teal">
+        <div class="sun-item">சூரியோதயம் <span>06:12 AM</span></div>
+        <div class="sun-item">சூரியாஸ்தமனம் <span>05:35 PM</span></div>
+        <div class="sun-item">ஆயனம் <span>தக்ஷிணாயனம்</span></div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-box">
+        <label><b>தேதி & நேரத்தைத் தேர்ந்தெடுக்கவும்:</b></label>
+        <div class="input-group">
+            <input type="date" id="inputDate">
+            <input type="time" id="inputTime" value="06:30">
+        </div>
+        <button class="btn-calc" onclick="calculatePanchang()">பஞ்சாங்கம் பார்க்க</button>
+    </div>
+
+    <!-- Results -->
+    <div id="resultBox" class="result-container">
+        <div class="panchang-body">
+            
+            <h3 style="margin:5px 0 10px 0; color:#333; font-size:16px; text-align:center;">🗓️ தேர்ந்தெடுக்கப்பட்ட தேதியின் 3 நாள் விவரங்கள்</h3>
+            
+            <!-- 3 Days Breakdown -->
+            <div id="prevDayCard" class="day-block"></div>
+            <div id="currDayCard" class="day-block current"></div>
+            <div id="nextDayCard" class="day-block"></div>
+
+            <!-- Next Year Section -->
+            <div class="next-year-container">
+                <div class="next-year-header">📅 அடுத்த வருடம் இதே திதி வரும் 3 நாட்கள்</div>
+                <div id="nextYear3Days"></div>
+            </div>
+
+            <!-- Dhanishta Panchami -->
+            <div class="nak-box-title">தனஷ்டா பஞ்சமி நட்சத்திரங்கள்</div>
+            <div class="nak-item" id="nak1">1. அவிட்டம் (Dhanishta)</div>
+            <div class="nak-item" id="nak2">2. சதயம் (Shatabhisha)</div>
+            <div class="nak-item" id="nak3">3. பூரட்டாதி (Purva Bhadpad)</div>
+            <div class="nak-item" id="nak4">4. உத்திரட்டாதி (Uttara Bhadpad)</div>
+            <div class="nak-item" id="nak5">5. ரேவதி (Revati)</div>
+            <div class="nak-item" id="nak6">6. ரோகிணி (Rohini)</div>
+
+        </div>
+
+        <div class="footer-banner">மூத்தோர் வழிபாடு நலம் தரும்</div>
+    </div>
+</div>
+
+<script>
+const tamilMonths = ["சித்திரை", "வைகாசி", "ஆனி", "ஆடி", "ஆவணி", "புரட்டாசி", "ஐப்பசி", "கார்த்திகை", "மார்கழி", "தை", "மாசி", "பங்குனி"];
+const engMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const days = ["ஞாயிறு", "திங்கள்", "செவ்வாய்", "புதன்", "வியாழன்", "வெள்ளி", "சனி"];
+
+// Updated tithis with explicit Shukla and Krishna Paksha prefixes
+const tithis = [
+    "சுக்ல பக்ஷ பிரதமை", "சுக்ல பக்ஷ த்விதீயை", "சுக்ல பக்ஷ த்ருதீயை", "சுக்ல பக்ஷ சதுர்த்தி", "சுக்ல பக்ஷ பஞ்சமி", 
+    "சுக்ல பக்ஷ ஷஷ்டி", "சுக்ல பக்ஷ சப்தமி", "சுக்ல பக்ஷ அஷ்டமி", "சுக்ல பக்ஷ நவமி", "சுக்ல பக்ஷ தசமி", 
+    "சுக்ல பக்ஷ ஏகாதசி", "சுக்ல பக்ஷ த்வாதசி", "சுக்ல பக்ஷ த்ரயோதசி", "சுக்ல பக்ஷ சதுர்த்தசி", "பௌர்ணமி",
+    "கிருஷ்ண பக்ஷ பிரதமை", "கிருஷ்ண பக்ஷ த்விதீயை", "கிருஷ்ண பக்ஷ த்ருதீயை", "கிருஷ்ண பக்ஷ சதுர்த்தி", "கிருஷ்ண பக்ஷ பஞ்சமி", 
+    "கிருஷ்ண பக்ஷ ஷஷ்டி", "கிருஷ்ண பக்ஷ சப்தமி", "கிருஷ்ண பக்ஷ அஷ்டமி", "கிருஷ்ண பக்ஷ நவமி", "கிருஷ்ண பக்ஷ தசமி", 
+    "கிருஷ்ண பக்ஷ ஏகாதசி", "கிருஷ்ண பக்ஷ த்வாதசி", "கிருஷ்ண பக்ஷ த்ரயோதசி", "கிருஷ்ண பக்ஷ சதுர்த்தசி", "அமாவாசை"
+];
+
+const nakshatras = ["அஸ்வினி", "பரணி", "கார்த்திகை", "ரோகிணி", "மிருகசீரிஷம்", "திருவாதிரை", "புனர்பூசம்", "பூசம்", "ஆயில்யம்", "மகம்", "பூரம்", "உத்திரம்", "ஹஸ்தம்", "சித்திரை", "சுவாதி", "விசாகம்", "அனுஷம்", "கேட்டை", "மூலம்", "பூராடம்", "உத்திராடம்", "திருவோணம்", "அவிட்டம்", "சதயம்", "பூரட்டாதி", "உத்திரட்டாதி", "ரேவதி"];
+
+function getAstronomyDetails(dateObj) {
+    let y = dateObj.getFullYear();
+    let m = dateObj.getMonth() + 1;
+    let d = dateObj.getDate() + (dateObj.getHours() + dateObj.getMinutes()/60.0)/24.0;
+
+    if (m <= 2) { y -= 1; m += 12; }
+    let A = Math.floor(y / 100);
+    let B = 2 - A + Math.floor(A / 4);
+    let JD = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d + B - 1524.5;
+
+    let D = JD - 2451545.0;
+
+    let sunL = (280.466 + 0.9856474 * D) % 360;
+    let sunM = (357.529 + 0.9856003 * D) * Math.PI / 180;
+    let sunTrue = (sunL + 1.915 * Math.sin(sunM) + 0.020 * Math.sin(2 * sunM)) % 360;
+    if(sunTrue < 0) sunTrue += 360;
+
+    let moonL = (218.316 + 13.176396 * D) % 360;
+    let moonM = (134.963 + 13.064993 * D) * Math.PI / 180;
+    let moonTrue = (moonL + 6.289 * Math.sin(moonM)) % 360;
+    if(moonTrue < 0) moonTrue += 360;
+
+    let ayanamsa = 23.85 + (D / 36525) * 1.4;
+    let sunSidereal = (sunTrue - ayanamsa + 360) % 360;
+    let moonSidereal = (moonTrue - ayanamsa + 360) % 360;
+
+    let monthIdx = Math.floor(sunSidereal / 30);
+    let tamilDate = Math.floor((sunSidereal % 30)) + 1;
+    let diff = (moonSidereal - sunSidereal + 360) % 360;
+    
+    let tithiIdx = Math.floor(diff / 12);
+    let nakshatraIdx = Math.floor(moonSidereal / (360 / 27));
+
+    return { monthIdx, tamilDate, tithiIdx, nakshatraIdx };
+}
+
+function getTimeRange(inputDate, type) {
+    let currentIdx = getAstronomyDetails(inputDate)[type];
+    let start = new Date(inputDate), end = new Date(inputDate);
+
+    for (let m = 0; m >= -1440; m -= 15) {
+        let t = new Date(inputDate.getTime() + m * 60000);
+        if (getAstronomyDetails(t)[type] !== currentIdx) {
+            start = new Date(t.getTime() + 15 * 60000);
+            break;
+        }
+    }
+    for (let m = 0; m <= 1440; m += 15) {
+        let t = new Date(inputDate.getTime() + m * 60000);
+        if (getAstronomyDetails(t)[type] !== currentIdx) {
+            end = t;
+            break;
+        }
+    }
+    let f = (d) => `${engMonths[d.getMonth()]} ${d.getDate()} ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+    return `${f(start)} – ${f(end)}`;
+}
+
+function generateDayHTML(targetDate, labelText) {
+    let cur = getAstronomyDetails(targetDate);
+    let engStr = `${engMonths[targetDate.getMonth()]} ${targetDate.getDate()}, ${targetDate.getFullYear()} (${days[targetDate.getDay()]})`;
+    let tamilStr = `${tamilMonths[cur.monthIdx]} ${cur.tamilDate}`;
+    let tithiTime = getTimeRange(targetDate, 'tithiIdx');
+    let nakTime = getTimeRange(targetDate, 'nakshatraIdx');
+
+    return `
+        <div class="day-title">${labelText}: ${engStr}</div>
+        <div class="info-row"><b>தமிழ் தேதி:</b> ${tamilStr}</div>
+        <div class="info-row"><b>திதி:</b> ${tithis[cur.tithiIdx]} <br><span class="time-badge">${tithiTime}</span></div>
+        <div class="info-row"><b>நட்சத்திரம்:</b> ${nakshatras[cur.nakshatraIdx]} <br><span class="time-badge">${nakTime}</span></div>
+    `;
+}
+
+function calculatePanchang() {
+    let dateVal = document.getElementById("inputDate").value;
+    let timeVal = document.getElementById("inputTime").value || "06:30";
+
+    if (!dateVal) { alert("தேதியைத் தேர்ந்தெடுக்கவும்!"); return; }
+
+    let [y, m, d] = dateVal.split('-').map(Number);
+    let [h, min] = timeVal.split(':').map(Number);
+    let selectedDate = new Date(y, m - 1, d, h, min);
+
+    let prevDate = new Date(selectedDate.getTime() - 86400000);
+    let nextDate = new Date(selectedDate.getTime() + 86400000);
+
+    document.getElementById("prevDayCard").innerHTML = generateDayHTML(prevDate, "⏮️ முந்தைய நாள்");
+    document.getElementById("currDayCard").innerHTML = generateDayHTML(selectedDate, "📌 நீங்கள் தேர்ந்தெடுத்த நாள்");
+    document.getElementById("nextDayCard").innerHTML = generateDayHTML(nextDate, "⏭️ அடுத்த நாள்");
+
+    let cur = getAstronomyDetails(selectedDate);
+    let nextYearMatchingDate = null;
+
+    for (let i = 330; i <= 385; i++) {
+        let testD = new Date(selectedDate.getTime() + i * 86400000);
+        let testCur = getAstronomyDetails(testD);
+        if (testCur.monthIdx === cur.monthIdx && testCur.tithiIdx === cur.tithiIdx) {
+            nextYearMatchingDate = testD;
+            break;
+        }
+    }
+
+    if (nextYearMatchingDate) {
+        let nyPrev = new Date(nextYearMatchingDate.getTime() - 86400000);
+        let nyNext = new Date(nextYearMatchingDate.getTime() + 86400000);
+
+        document.getElementById("nextYear3Days").innerHTML = `
+            <div class="day-block" style="background:#fff;">${generateDayHTML(nyPrev, "முந்தைய நாள்")}</div>
+            <div class="day-block current">${generateDayHTML(nextYearMatchingDate, "🎯 பிரதான நாள் (அடுத்த வருடம்)")}</div>
+            <div class="day-block" style="background:#fff;">${generateDayHTML(nyNext, "அடுத்த நாள்")}</div>
+        `;
+    }
+
+    for(let i=1; i<=6; i++) document.getElementById(`nak${i}`).classList.remove("active-nak");
+    let cNak = nakshatras[cur.nakshatraIdx];
+    if (cNak === "அவிட்டம்") document.getElementById("nak1").classList.add("active-nak");
+    else if (cNak === "சதயம்") document.getElementById("nak2").classList.add("active-nak");
+    else if (cNak === "பூரட்டாதி") document.getElementById("nak3").classList.add("active-nak");
+    else if (cNak === "உத்திரட்டாதி") document.getElementById("nak4").classList.add("active-nak");
+    else if (cNak === "ரேவதி") document.getElementById("nak5").classList.add("active-nak");
+    else if (cNak === "ரோகிணி") document.getElementById("nak6").classList.add("active-nak");
+
+    document.getElementById("resultBox").style.display = "block";
+}
+</script>
+
+</body>
+</html>
